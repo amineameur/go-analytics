@@ -1,0 +1,14 @@
+{
+  "name": "cubejs",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "cubejs-server"
+  },
+  "template": "docker",
+  "templateVersion": "0.36.7",
+  "devDependencies": {
+    "@cubejs-backend/clickhouse-driver": "^0.36.7",
+    "@cubejs-backend/server": "^0.36.7"
+  }
+}
