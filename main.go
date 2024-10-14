@@ -10,11 +10,9 @@ import (
 	"github.com/ClickHouse/clickhouse-go/v2"
 )
 
-// Connect to ClickHouse using the native client
 func connectToClickHouse() clickhouse.Conn {
-	// Use the container IP address instead of localhost
 	opts := &clickhouse.Options{
-		Addr: []string{"172.18.0.2:9000"}, // Update with your ClickHouse IP or hostname
+		Addr: []string{"172.18.0.2:9001"},
 		Auth: clickhouse.Auth{
 			Database: "analytics",
 			Username: "default",
@@ -31,7 +29,6 @@ func connectToClickHouse() clickhouse.Conn {
 		log.Fatalf("Could not connect to ClickHouse: %v", err)
 	}
 
-	// Ping the database to ensure the connection is working
 	if err := conn.Ping(context.Background()); err != nil {
 		log.Fatalf("Ping failed: %v", err)
 	}
@@ -40,7 +37,6 @@ func connectToClickHouse() clickhouse.Conn {
 }
 
 func main() {
-	// Check if the --migration flag is provided
 	if len(os.Args) > 1 && os.Args[1] == "--migration" {
 		runMigration()
 	} else {
@@ -48,12 +44,10 @@ func main() {
 	}
 }
 
-// Function to run migration (add fake invoices data)
 func runMigration() {
 	conn := connectToClickHouse()
 	defer conn.Close()
 
-	// Create the invoices table
 	createTableQuery := `
 		CREATE TABLE IF NOT EXISTS invoices (
 			id UInt32,
@@ -70,13 +64,11 @@ func runMigration() {
 	log.Println("Migration complete: Created 'invoices' table.")
 
 	for i := 1; i <= 100; i++ {
-		// Generate a date for the invoice, distributing it across months.
 		year := 2024
-		month := (i % 12) + 1 // This will give a month between 1 and 12
-		day := (i % 28) + 1   // This will ensure a valid day between 1 and 28
+		month := (i % 12) + 1
+		day := (i % 28) + 1
 		invoiceDate := fmt.Sprintf("%d-%02d-%02d", year, month, day)
 
-		// Insert query with the generated date
 		insertQuery := fmt.Sprintf("INSERT INTO invoices VALUES (%d, %.2f, '%s')", i, float32(i)*100, invoiceDate)
 
 		err := conn.Exec(context.Background(), insertQuery)
@@ -88,12 +80,10 @@ func runMigration() {
 	log.Println("Inserted 100 fake invoices.")
 }
 
-// Function to fetch analytics data
 func fetchAnalyticsData() {
 	conn := connectToClickHouse()
 	defer conn.Close()
 
-	// Fetch the most revenue-generating month
 	query := `
 		SELECT formatDateTime(created_at, '%Y-%m') AS month, sum(amount) AS total_revenue
 		FROM invoices
